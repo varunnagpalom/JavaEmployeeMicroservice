@@ -11,6 +11,7 @@ import com.example.demo.dto.EmployeeDto;
 import com.example.demo.dto.EmployeeResponseDto;
 import com.example.demo.dto.EmployeeUpdateDto;
 import com.example.demo.model.Employee;
+import com.example.demo.model.enums.Status;
 import com.example.demo.repository.EmployeeRepository;
 
 @Service
@@ -77,5 +78,15 @@ public class EmployeeService {
         }
         Employee updatedEmployee = employeeRepository.save(employee);
         return convertToDto(updatedEmployee);
+    }
+
+    public void softDeleteEmployee(int id) {
+        Optional<Employee> optionalEmployee = employeeRepository.findById(id);
+        if (optionalEmployee.isEmpty()) {
+            throw new RuntimeException("Employee not found with id: " + id);
+        }
+        Employee employee = optionalEmployee.get();
+        employee.setStatus(Status.NOT_ACTIVE);
+        employeeRepository.save(employee);
     }
 }
