@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dto.EmployeeDto;
 import com.example.demo.dto.EmployeeResponseDto;
+import com.example.demo.dto.EmployeeUpdateDto;
 import com.example.demo.model.Employee;
 import com.example.demo.service.EmployeeService;
 
@@ -35,5 +38,11 @@ public class EmployeeController {
     public ResponseEntity<List<EmployeeResponseDto>> getAllEmployees() {
         List<EmployeeResponseDto> employees = employeeService.getAllEmployees();
         return new ResponseEntity<>(employees, HttpStatus.OK);
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<EmployeeResponseDto> updateEmployee(@PathVariable int id, @RequestBody EmployeeUpdateDto employeeUpdateDto) {
+        EmployeeResponseDto updatedEmployee = employeeService.updateEmployee(id, employeeUpdateDto);
+        return new ResponseEntity<>(updatedEmployee, HttpStatus.OK);
     }
 }

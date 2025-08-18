@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.demo.dto.EmployeeDto;
 import com.example.demo.dto.EmployeeResponseDto;
+import com.example.demo.dto.EmployeeUpdateDto;
 import com.example.demo.model.Employee;
 import com.example.demo.repository.EmployeeRepository;
 
@@ -50,5 +52,30 @@ public class EmployeeService {
             dto.setManagerId(employee.getManagerId());
         }
         return dto;
+    }
+
+    public EmployeeResponseDto updateEmployee(int id, EmployeeUpdateDto employeeUpdateDto) {
+        Optional<Employee> optionalEmployee = employeeRepository.findById(id);
+        if (optionalEmployee.isEmpty()) {
+            throw new RuntimeException("Employee not found with id: " + id);
+        }
+        Employee employee = optionalEmployee.get();
+        if (employeeUpdateDto.getName() != null) {
+            employee.setName(employeeUpdateDto.getName());
+        }
+        if (employeeUpdateDto.getStatus() != null) {
+            employee.setStatus(employeeUpdateDto.getStatus());
+        }
+        if (employeeUpdateDto.getDepartment() != null) {
+            employee.setDepartment(employeeUpdateDto.getDepartment());
+        }
+        if (employeeUpdateDto.getSalary() != null) {
+            employee.setSalary(employeeUpdateDto.getSalary());
+        }
+        if (employeeUpdateDto.getManagerId() != null) {
+            employee.setManagerId(employeeUpdateDto.getManagerId());
+        }
+        Employee updatedEmployee = employeeRepository.save(employee);
+        return convertToDto(updatedEmployee);
     }
 }
