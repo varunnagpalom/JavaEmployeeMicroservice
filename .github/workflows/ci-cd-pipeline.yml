@@ -61,3 +61,39 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+  
+  # This job deploys the Docker image to the EC2 instance
+  deploy-to-ec2:
+    # This job will only run after 'build-and-push-image' has successfully completed
+    needs: build-and-push-image
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Configure AWS credentials
+      # This step uses the secrets we stored in GitHub to authenticate with AWS
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # 2. Deploy to EC2 using AWS SSM Send-Command
+      # This is a secure way to run commands on your EC2 instance without opening SSH ports
+      - name: Deploy to EC2
+        run: |
+          aws ssm send-command \
+            --instance-ids "${{ secrets.EC2_INSTANCE_ID }}" \
+            --document-name "AWS-RunShellScript" \
+            --comment "Deploying new Docker image" \
+            --parameters 'commands=
+              [
+                "#!/bin/bash",
+                "cd /home/ec2-user",
+                "echo DOCKER_IMAGE=ghcr.io/${{ github.repository }}:latest >> .env",
+                "echo DOCKER_LOGIN_USER=${{ github.actor }} >> .env",
+                "echo DOCKER_LOGIN_PASSWORD=${{ secrets.GITHUB_TOKEN }} >> .env",
+                "docker-compose down",
+                "docker-compose pull",
+                "docker-compose up -d"
+              ]'
